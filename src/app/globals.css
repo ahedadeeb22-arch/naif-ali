@@ -1,0 +1,118 @@
+@import "tailwindcss";
+@import "@fontsource/cairo/400.css";
+@import "@fontsource/cairo/600.css";
+@import "@fontsource/cairo/700.css";
+
+/* ============ theme tokens (UI_UX_SPEC §1) ============ */
+@theme {
+  --color-brand-900: #0c2461;
+  --color-brand-800: #1e3799;
+  --color-brand-700: #2a4bbd;
+  --color-green-900: #006266;
+  --color-green-600: #009432;
+  --color-gold-500: #f6b93b;
+  --color-violet-500: #6c5ce7;
+  --color-surface: #f4f6f9;
+  --color-surface-card: #ffffff;
+  --color-border-subtle: #e2e7ef;
+  --color-danger-600: #c0392b;
+  --color-warn-600: #b9770e;
+  --font-sans: "Cairo", "Segoe UI", "Tahoma", system-ui, sans-serif;
+  --radius-card: 0.9rem;
+}
+
+/* RTL-first logical helpers */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background: var(--color-surface);
+  color: #10131a;
+  font-family: var(--font-sans);
+  font-feature-settings: "kern";
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid var(--color-brand-800);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* numbers stay LTR inside RTL text */
+.num {
+  direction: ltr;
+  unicode-bidi: embed;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============ print (UI_UX_SPEC §8) ============ */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 12mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+  }
+  .no-print,
+  nav,
+  header.app-header,
+  aside.app-sidebar,
+  .app-bottom-nav {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .print-page {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+  table {
+    width: 100% !important;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  thead {
+    display: table-header-group;
+  }
+  tr,
+  img {
+    page-break-inside: avoid;
+  }
+  tfoot {
+    display: table-footer-group;
+  }
+}
+
+.print-only {
+  display: none;
+}
+
+/* mobile table horizontal scroll keeping first column visible */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-scroll table {
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table-scroll th.sticky-start,
+.table-scroll td.sticky-start {
+  position: sticky;
+  inset-inline-start: 0;
+  background: var(--color-surface-card);
+  z-index: 1;
+}

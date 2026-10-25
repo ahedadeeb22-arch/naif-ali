@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>النظام المحاسبي والرقابي المتكامل - إدارة مشتريات وتوزيع الخضروات</title>
+<style>
+    :root {
+        --primary-navy: #0c2461;
+        --secondary-blue: #1e3799;
+        --accent-gold: #f6b93b;
+        --worker-teal: #006266;
+        --success-green: #009432;
+        --Report-purple: #6c5ce7;
+        --danger-red: #EA2027;
+        --warning-orange: #e58e26;
+        --bg-light: #f0f2f5;
+    }
+
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { margin: 0; background-color: var(--bg-light); color: #1e272e; direction: rtl; }
+    
+    /* شريط التنقل العلوي الاحترافي للتبديل بين الشاشات الخمس */
+    .preview-switcher {
+        background: linear-gradient(135deg, var(--primary-navy), var(--secondary-blue));
+        color: white;
+        padding: 12px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        gap: 10px;
+    }
+    .preview-title { font-size: 16px; font-weight: bold; color: var(--accent-gold); display: flex; align-items: center; gap: 8px; }
+    .screen-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tab-btn {
+        background-color: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.28);
+        color: white;
+        padding: 8px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 13.5px;
+        transition: all 0.25s ease;
+    }
+    .tab-btn:hover { background-color: rgba(255,255,255,0.28); transform: translateY(-1px); }
+    .tab-btn.active { background-color: var(--accent-gold); color: var(--primary-navy); border-color: var(--accent-gold); box-shadow: 0 3px 8px rgba(246, 185, 59, 0.4); }
+
+    .container { max-width: 1340px; margin: 20px auto; padding: 0 15px; }
+    .screen { display: none; animation: fadeIn 0.3s ease; }
+    .screen.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* شريط تنبيه وضع التعديل الشامل للمدير عند الانتقال من صفحة التقارير */
+    .admin-edit-banner {
+        display: none;
+        background: linear-gradient(135deg, #6c5ce7, #8e44ad);
+        color: white;
+        padding: 14px 20px;
+        border-radius: 10px;
+        margin-bottom: 18px;
+        box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        border-right: 6px solid var(--accent-gold);
+    }
+    .admin-edit-banner.show { display: flex; }
+
+    /* البطاقات والترويسات */
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 22px;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+        margin-bottom: 22px;
+        border-top: 5px solid var(--secondary-blue);
+    }
+    .card-worker { border-top-color: var(--success-green); }
+    .card-night-orders { border-top-color: #0984e3; background: linear-gradient(to bottom, #ffffff, #f8fbff); }
+    .card-report { border-top-color: var(--Report-purple); }
+    .card-grocery { border-top-color: #0652DD; }
+    .card-supplier { border-top-color: var(--warning-orange); }
+
+    .header-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        border-bottom: 2px solid #f1f2f6;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+    .badge {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: bold;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .badge-green { background: #e8f8f5; color: var(--success-green); border: 1px solid var(--success-green); }
+    .badge-blue { background: #eef7ff; color: #0652DD; border: 1px solid #0652DD; }
+    .badge-purple { background: #f5eeff; color: var(--Report-purple); border: 1px solid var(--Report-purple); }
+    .badge-red { background: #fdedec; color: var(--danger-red); border: 1px solid var(--danger-red); }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 7px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 13.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: 0.2s;
+    }
+    .btn:hover { opacity: 0.92; transform: translateY(-1px); }
+    .btn-green { background-color: var(--success-green); color: white; }
+    .btn-blue { background-color: #0652DD; color: white; }
+    .btn-purple { background-color: var(--Report-purple); color: white; }
+    .btn-orange { background-color: var(--warning-orange); color: white; }
+    .btn-dark { background-color: #2f3542; color: white; }
+    .btn-gold { background-color: var(--accent-gold); color: var(--primary-navy); }
+
+    /* شريط أدوات الكسور ومؤشر الإنجاز */
+    .worker-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        background: #f1f2f6;
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-size: 13.5px;
+    }
+    .fraction-buttons { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .frac-btn {
+        background: white;
+        border: 1.5px solid var(--worker-teal);
+        color: var(--worker-teal);
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .frac-btn:hover { background: var(--worker-teal); color: white; }
+
+    .progress-pill {
+        background: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        border: 1px solid #ced6e0;
+        font-weight: bold;
+        color: var(--worker-teal);
+    }
+
+    /* جدول الكشف اليومي الموحد */
+    .sheet-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+    .sheet-table th {
+        background-color: var(--worker-teal);
+        color: white;
+        padding: 10px 6px;
+        border: 1px solid #004d4f;
+        text-align: center;
+    }
+    .sheet-table td {
+        border: 1px solid #ced6e0;
+        padding: 6px 5px;
+        text-align: center;
+    }
+    .sheet-table tr:nth-child(even) { background-color: #f8f9fa; }
+    .sheet-table tr:hover { background-color: #eef7ff; }
+
+    /* تلوين السطر الذي تم شراؤه */
+    .row-bought { background-color: #e8f8f5 !important; }
+    .row-bought td { border-color: #a3e4d7 !important; }
+    .row-cancelled { background-color: #fff5f5 !important; }
+
+    .btn-check-buy {
+        background-color: #ffffff;
+        color: #57606f;
+        border: 2px solid #bdc3c7;
+        border-radius: 20px;
+        padding: 5px 12px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 12.5px;
+        transition: 0.2s;
+        width: 115px;
+    }
+    .btn-check-buy:hover { border-color: var(--success-green); color: var(--success-green); }
+    .btn-check-buy.bought {
+        background-color: var(--success-green);
+        color: white;
+        border-color: var(--success-green);
+        box-shadow: 0 2px 6px rgba(0, 148, 50, 0.3);
+    }
+    
+    .cell-input {
+        width: 62px;
+        padding: 5px;
+        text-align: center;
+        border: 1px solid #bdc3c7;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 14px;
+        background-color: #fff;
+        transition: 0.2s;
+    }
+    .cell-input:focus { border-color: var(--success-green); outline: none; background-color: #e8f8f5; box-shadow: 0 0 4px rgba(0,148,50,0.3); }
+    .total-input {
+        width: 68px;
+        padding: 5px;
+        text-align: center;
+        border: 1.5px solid var(--primary-navy);
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 14.5px;
+        background-color: #e8f8f5;
+        color: var(--worker-teal);
+    }
+    .price-input { width: 88px; color: var(--primary-navy); background-color: #fffdf0; border-color: #f39c12; }
+    .item-col { font-weight: bold; font-size: 14.5px; background-color: #f1f2f6; min-width: 115px; }
+    .supplier-select {
+        padding: 5px;
+        border-radius: 5px;
+        border: 1px solid #bdc3c7;
+        font-weight: bold;
+        width: 135px;
+        background: white;
+    }
+    .dup-btn {
+        border: 1px solid #006266;
+        background: #e8f8f5;
+        color: #006266;
+        cursor: pointer;
+        border-radius: 4px;
+        font-weight: bold;
+        padding: 1px 6px;
+        margin-right: 4px;
+        font-size: 12px;
+    }
+    .dup-btn:hover { background: #006266; color: white; }
+
+    .tfoot-row td {
+        background-color: #ffeaa7 !important;
+        font-weight: bold;
+        font-size: 14.5px;
+        color: #2d3436;
+        padding: 10px 6px;
+        border: 2px solid #fdcb6e;
+    }
+
+    /* الجدول السفلي المحفوظ لطلبات البقالات وبطاقات الفرز */
+    .saved-orders-table th { background-color: #0984e3; border-color: #0652DD; }
+    .grocery-box-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+        gap: 14px;
+        margin-top: 15px;
+    }
+    .grocery-order-card {
+        background: white;
+        border: 1px solid #dfe4ea;
+        border-top: 4px solid #0984e3;
+        border-radius: 8px;
+        padding: 14px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+    .grocery-order-card h4 {
+        margin: 0 0 10px 0;
+        color: var(--primary-navy);
+        border-bottom: 1px solid #f1f2f6;
+        padding-bottom: 6px;
+        display: flex;
+        justify-content: space-between;
+    }
+    .grocery-order-list { margin: 0; padding-right: 18px; font-size: 13.5px; line-height: 1.8; }
+
+    /* الإحصائيات والبطاقات المالية للمدير */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .stat-box {
+        background: white;
+        padding: 16px;
+        border-radius: 10px;
+        border-right: 5px solid #0652DD;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .stat-title { font-size: 13px; color: #57606f; margin-bottom: 6px; }
+    .stat-value { font-size: 22px; font-weight: bold; color: #1e272e; }
+
+    /* تصميم كروت أرشيف التقارير اليومية المنفردة */
+    .reports-archive-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .day-report-card {
+        background: #ffffff;
+        border: 2px solid #dfe4ea;
+        border-right: 6px solid var(--Report-purple);
+        border-radius: 10px;
+        padding: 16px;
+        transition: 0.2s;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+    .day-report-card.selected {
+        background-color: #f8f6ff;
+        border-color: var(--Report-purple);
+        border-right-color: var(--accent-gold);
+    }
+    .day-card-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px dashed #dfe4ea;
+    }
+
+    /* مفاتيح التبديل (Switches) */
+    .switch-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 15px;
+        border: 1px solid #dfe4ea;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        background: #fdfdfd;
+    }
+    .toggle-btn {
+        background-color: #2ed573;
+        color: white;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+    }
+    .toggle-btn.off { background-color: #ff4757; }
+    
+    .filter-bar {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        background: #f8f9fa;
+        padding: 12px 15px;
+        border-radius: 8px;
+        border: 1px solid #dfe4ea;
+        margin-bottom: 15px;
+    }
+    .filter-bar select, .filter-bar input {
+        padding: 7px 12px;
+        border: 1px solid #ced6e0;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+
+<!-- شريط التنقل بين الشاشات الخمس للمشروع الكامل -->
+<div class="preview-switcher">
+    <div class="preview-title">👑 النظام المحاسبي المتكامل (اضغط للتنقل بين الشاشات الخمس):</div>
+    <div class="screen-tabs">
+        <button class="tab-btn active" id="tab-worker" onclick="showScreen('worker-screen', this)">1. واجهة العامل (الكشف اليومي + جدول الطلبات)</button>
+        <button class="tab-btn" id="tab-reports" onclick="showScreen('daily-reports-screen', this)">🌟 2. تقارير الأيام المنفردة والتعديل الشامل (للمدير)</button>
+        <button class="tab-btn" id="tab-accounts" onclick="showScreen('admin-dashboard', this)">3. لوحة المدير (كشوفات البقالات والموردين)</button>
+        <button class="tab-btn" id="tab-perms" onclick="showScreen('admin-permissions', this)">4. لوحة المدير (الصلاحيات والتدقيق)</button>
+        <button class="tab-btn" id="tab-grocery" onclick="showScreen('grocery-screen', this)">5. واجهة صاحب البقالة (قراءة فقط)</button>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- ==================== 1. شاشة العامل (الكشف اليومي الموحد + الجدول السفلي) ==================== -->
+    <div id="worker-screen" class="screen active">
+
+        <!-- لافتة خاصة تظهر فقط عندما ينتقل المدير لتعديل يوم محدد دون تغيير تاريخه -->
+        <div id="admin-edit-mode-banner" class="admin-edit-banner">
+            <div>
+                <h3 style="margin:0; font-size:17px;">🔓 وضع التعديل الشامل للمدير مفعل الآن على كشف: <span id="editing-day-label" style="color:#ffeaa7; text-decoration:underline;">الجمعة (16/10/2026م)</span></h3>
+                <p style="margin:4px 0 0 0; font-size:13px;">يمكنك تعديل كميات البقالات، أو زيادة العدد الإجمالي (شراء إضافي)، أو تعديل السعر والمورد، وسيتم الترحيل بنفس تاريخ هذا اليوم دون تغييره.</p>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-gold" onclick="saveAndRepostCurrentDay()">💾 حفظ التعديل وإعادة الترحيل بنفس التاريخ</button>
+                <button class="btn btn-dark" onclick="exitAdminEditMode()">↩️ العودة لصفحة التقارير</button>
+            </div>
+        </div>
+
+        <div class="card card-worker">
+            <div class="header-bar">
+                <div>
+                    <h2 style="margin:0; color:#006266;">📋 شاشة الكشف اليومي الموحد (إدخال طلبات الليل وشراء الصباح)</h2>
+                    <p style="margin:4px 0 0 0; color:#57606f; font-size:13.5px;">
+                        اليوم: <strong id="sheet-day-name" style="color:#0c2461;">الجمعة</strong> | 
+                        التاريخ الثابت للكشف: <strong id="sheet-date-val" style="color:#eb2f06;">16 / 10 / 2026م</strong> | 
+                        الوضع الحالي: <strong id="current-actor-label">العامل (أحمد)</strong>
+                    </p>
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="btn btn-blue" onclick="promptAddNewProduct()">➕ إضافة صنف جديد</button>
+                    <button class="btn btn-green" onclick="promptAddNewSupplier()">➕ إضافة مورد جديد</button>
+                    <span class="badge badge-green" id="sheet-status-badge">حالة الكشف: مفتوح للتعديل والشراء</span>
+                </div>
+            </div>
+
+            <div class="worker-toolbar">
+                <div class="fraction-buttons">
+                    <strong>⚡ أزرار إدخال الكسور السريعة (اضغط الخانة ثم الزر):</strong>
+                    <button type="button" class="frac-btn" onclick="insertFraction('0.5')">½ (0.5 نصف)</button>
+                    <button type="button" class="frac-btn" onclick="insertFraction('0.25')">¼ (0.25 ربع)</button>
+                    <button type="button" class="frac-btn" onclick="insertFraction('1.5')">1.5 (واحد ونصف)</button>
+                </div>
+                <div class="progress-pill" id="buy-progress-counter">
+                    🛒 إنجاز الشراء الصباحي: تم شراء 5 من 6 أصناف مطلوبة
+                </div>
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table class="sheet-table" id="main-sheet-table">
+                    <thead>
+                        <tr>
+                            <th style="width:7.5%;">ص<br><small>(بقالة الصفا)</small></th>
+                            <th style="width:7.5%;">ح<br><small>(بقالة الخير)</small></th>
+                            <th style="width:7.5%;">س<br><small>(بقالة السعادة)</small></th>
+                            <th style="width:7.5%;">ع<br><small>(بقالة العروبة)</small></th>
+                            <th style="width:7.5%;">ك<br><small>(بقالة الكرامة)</small></th>
+                            <th style="width:9%; background:#0c2461;">العدد<br><small>(الإجمالي)</small></th>
+                            <th style="width:14%;">الصنف<br><small>(أساسي / مضاف)</small></th>
+                            <th style="width:11%;">السعر 1<br><small>(سعر الوحدة)</small></th>
+                            <th style="width:15%;">المورد<br><small>(قائمة منسدلة)</small></th>
+                            <th style="width:13.5%; background:#009432;">تأكيد الشراء<br><small>(مقابل كل مورد)</small></th>
+                        </tr>
+                    </thead>
+                    <tbody id="sheet-tbody">
+                        <!-- طماط -->
+                        <tr class="row-bought" data-item="طماط">
+                            <td><input type="text" class="cell-input q-ص" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ح" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-س" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ع" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ك" value="1" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="total-input row-total-qty" value="1" oninput="recalcTotalsOnly()"></td>
+                            <td class="item-col"><span class="item-name">طماط</span> <button type="button" class="dup-btn" title="تكرار الصنف لمورد آخر" onclick="duplicateRow(this)">+</button></td>
+                            <td><input type="text" class="cell-input price-input" value="6100" oninput="recalcAll()"></td>
+                            <td>
+                                <select class="supplier-select">
+                                    <option selected>أمين</option>
+                                    <option>فارس</option>
+                                    <option>الزعيم</option>
+                                    <option>صالح اللبيع</option>
+                                    <option>عمار الخيار</option>
+                                </select>
+                            </td>
+                            <td><button type="button" class="btn-check-buy bought" onclick="toggleBuyStatus(this)">تم الشراء ✅</button></td>
+                        </tr>
+                        <!-- بطاط -->
+                        <tr class="row-bought" data-item="بطاط">
+                            <td><input type="text" class="cell-input q-ص" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ح" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-س" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ع" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ك" value="1" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="total-input row-total-qty" value="1" oninput="recalcTotalsOnly()"></td>
+                            <td class="item-col"><span class="item-name">بطاط</span> <button type="button" class="dup-btn" title="تكرار الصنف لمورد آخر" onclick="duplicateRow(this)">+</button></td>
+                            <td><input type="text" class="cell-input price-input" value="16200" oninput="recalcAll()"></td>
+                            <td>
+                                <select class="supplier-select">
+                                    <option selected>أمين</option>
+                                    <option>فارس</option>
+                                    <option>الزعيم</option>
+                                    <option>صالح اللبيع</option>
+                                    <option>عمار الخيار</option>
+                                </select>
+                            </td>
+                            <td><button type="button" class="btn-check-buy bought" onclick="toggleBuyStatus(this)">تم الشراء ✅</button></td>
+                        </tr>
+                        <!-- بصل (ملغي/لم يشتر) -->
+                        <tr class="row-cancelled" data-item="بصل">
+                            <td><input type="text" class="cell-input q-ص" value="1" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ح" value="1" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-س" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ع" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ك" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="total-input row-total-qty" value="2" oninput="recalcTotalsOnly()"></td>
+                            <td class="item-col"><span class="item-name">بصل</span> <button type="button" class="dup-btn" onclick="duplicateRow(this)">+</button></td>
+                            <td><input type="text" class="cell-input price-input" placeholder="لم يُشترَ (0)" value="" oninput="recalcAll()"></td>
+                            <td>
+                                <select class="supplier-select">
+                                    <option selected>-- لم يتم الشراء --</option>
+                                    <option>أمين</option>
+                                    <option>فارس</option>
+                                    <option>الزعيم</option>
+                                </select>
+                            </td>
+                            <td><button type="button" class="btn-check-buy" onclick="toggleBuyStatus(this)">⏳ قيد الشراء</button></td>
+                        </tr>
+                        <!-- كوبش -->
+                        <tr class="row-bought" data-item="كوبش">
+                            <td><input type="text" class="cell-input q-ص" value="1" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ح" value="1" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-س" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ع" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ك" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="total-input row-total-qty" value="2" oninput="recalcTotalsOnly()"></td>
+                            <td class="item-col"><span class="item-name">كوبش</span> <button type="button" class="dup-btn" onclick="duplicateRow(this)">+</button></td>
+                            <td><input type="text" class="cell-input price-input" value="1300" oninput="recalcAll()"></td>
+                            <td>
+                                <select class="supplier-select">
+                                    <option>أمين</option>
+                                    <option selected>فارس</option>
+                                    <option>الزعيم</option>
+                                    <option>صالح اللبيع</option>
+                                </select>
+                            </td>
+                            <td><button type="button" class="btn-check-buy bought" onclick="toggleBuyStatus(this)">تم الشراء ✅</button></td>
+                        </tr>
+                        <!-- جزر -->
+                        <tr class="row-bought" data-item="جزر">
+                            <td><input type="text" class="cell-input q-ص" value="0.5" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ح" value="0.5" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-س" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ع" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ك" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="total-input row-total-qty" value="1" oninput="recalcTotalsOnly()"></td>
+                            <td class="item-col"><span class="item-name">جزر</span> <button type="button" class="dup-btn" onclick="duplicateRow(this)">+</button></td>
+                            <td><input type="text" class="cell-input price-input" value="3200" oninput="recalcAll()"></td>
+                            <td>
+                                <select class="supplier-select">
+                                    <option>أمين</option>
+                                    <option selected>الزعيم</option>
+                                    <option>صالح اللبيع</option>
+                                </select>
+                            </td>
+                            <td><button type="button" class="btn-check-buy bought" onclick="toggleBuyStatus(this)">تم الشراء ✅</button></td>
+                        </tr>
+                        <!-- بيبار -->
+                        <tr class="row-bought" data-item="بيبار">
+                            <td><input type="text" class="cell-input q-ص" value="1" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ح" value="0.5" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-س" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ع" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ك" value="0.5" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="total-input row-total-qty" value="2" oninput="recalcTotalsOnly()"></td>
+                            <td class="item-col"><span class="item-name">بيبار</span> <button type="button" class="dup-btn" onclick="duplicateRow(this)">+</button></td>
+                            <td><input type="text" class="cell-input price-input" value="2700" oninput="recalcAll()"></td>
+                            <td>
+                                <select class="supplier-select">
+                                    <option selected>الزعيم</option>
+                                    <option>صالح اللبيع</option>
+                                </select>
+                            </td>
+                            <td><button type="button" class="btn-check-buy bought" onclick="toggleBuyStatus(this)">تم الشراء ✅</button></td>
+                        </tr>
+                        <!-- باميه -->
+                        <tr class="row-bought" data-item="باميه">
+                            <td><input type="text" class="cell-input q-ص" value="0.5" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ح" value="0.5" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-س" value="0.5" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ع" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ك" value="0.5" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="total-input row-total-qty" value="2" oninput="recalcTotalsOnly()"></td>
+                            <td class="item-col"><span class="item-name">باميه</span> <button type="button" class="dup-btn" onclick="duplicateRow(this)">+</button></td>
+                            <td><input type="text" class="cell-input price-input" value="2800" oninput="recalcAll()"></td>
+                            <td>
+                                <select class="supplier-select">
+                                    <option selected>صالح اللبيع</option>
+                                    <option>عمار الخيار</option>
+                                </select>
+                            </td>
+                            <td><button type="button" class="btn-check-buy bought" onclick="toggleBuyStatus(this)">تم الشراء ✅</button></td>
+                        </tr>
+                        <!-- كوسه -->
+                        <tr class="row-bought" data-item="كوسه">
+                            <td><input type="text" class="cell-input q-ص" value="0.5" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ح" value="0.5" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-س" value="0.5" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ع" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ك" value="0.5" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="total-input row-total-qty" value="2" oninput="recalcTotalsOnly()"></td>
+                            <td class="item-col"><span class="item-name">كوسه</span> <button type="button" class="dup-btn" onclick="duplicateRow(this)">+</button></td>
+                            <td><input type="text" class="cell-input price-input" value="1500" oninput="recalcAll()"></td>
+                            <td>
+                                <select class="supplier-select">
+                                    <option selected>صالح اللبيع</option>
+                                    <option>عمار الخيار</option>
+                                </select>
+                            </td>
+                            <td><button type="button" class="btn-check-buy bought" onclick="toggleBuyStatus(this)">تم الشراء ✅</button></td>
+                        </tr>
+                        <!-- اسود -->
+                        <tr class="row-bought" data-item="اسود">
+                            <td><input type="text" class="cell-input q-ص" value="0.5" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ح" value="0.5" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-س" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ع" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ك" value="0.5" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="total-input row-total-qty" value="1.5" oninput="recalcTotalsOnly()"></td>
+                            <td class="item-col"><span class="item-name">اسود</span> <button type="button" class="dup-btn" onclick="duplicateRow(this)">+</button></td>
+                            <td><input type="text" class="cell-input price-input" value="800" oninput="recalcAll()"></td>
+                            <td>
+                                <select class="supplier-select">
+                                    <option selected>صالح اللبيع</option>
+                                    <option>عمار الخيار</option>
+                                </select>
+                            </td>
+                            <td><button type="button" class="btn-check-buy bought" onclick="toggleBuyStatus(this)">تم الشراء ✅</button></td>
+                        </tr>
+                        <!-- ليم -->
+                        <tr class="row-bought" data-item="ليم">
+                            <td><input type="text" class="cell-input q-ص" value="1" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ح" value="1" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-س" value="1" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ع" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ك" value="1" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="total-input row-total-qty" value="4" oninput="recalcTotalsOnly()"></td>
+                            <td class="item-col"><span class="item-name">ليم</span> <button type="button" class="dup-btn" onclick="duplicateRow(this)">+</button></td>
+                            <td><input type="text" class="cell-input price-input" value="3000" oninput="recalcAll()"></td>
+                            <td>
+                                <select class="supplier-select">
+                                    <option selected>عمار الخيار</option>
+                                    <option>صالح اللبيع</option>
+                                </select>
+                            </td>
+                            <td><button type="button" class="btn-check-buy bought" onclick="toggleBuyStatus(this)">تم الشراء ✅</button></td>
+                        </tr>
+                        <!-- خيار -->
+                        <tr class="row-bought" data-item="خيار">
+                            <td><input type="text" class="cell-input q-ص" value="4" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ح" value="2" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-س" value="2" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ع" value="" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="cell-input q-ك" value="2" onfocus="setLastFocus(this)" oninput="recalcAll()"></td>
+                            <td><input type="text" class="total-input row-total-qty" value="10" oninput="recalcTotalsOnly()"></td>
+                            <td class="item-col"><span class="item-name">خيار</span> <button type="button" class="dup-btn" onclick="duplicateRow(this)">+</button></td>
+                            <td><input type="text" class="cell-input price-input" value="1200" oninput="recalcAll()"></td>
+                            <td>
+                                <select class="supplier-select">
+                                    <option selected>عمار الخيار</option>
+                                    <option>صالح اللبيع</option>
+                                </select>
+                            </td>
+                            <td><button type="button" class="btn-check-buy bought" onclick="toggleBuyStatus(this)">تم الشراء ✅</button></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="tfoot-row">
+                            <td id="sum-ص">14,450 ر.ي</td>
+                            <td id="sum-ح">11,400 ر.ي</td>
+                            <td id="sum-س">7,150 ر.ي</td>
+                            <td id="sum-ع">0 ر.ي</td>
+                            <td id="sum-ك">31,000 ر.ي</td>
+                            <td id="sum-grand" style="background:#f6b93b !important; color:#0c2461;">64,000 ر.ي</td>
+                            <td>الإجمالي اليومي</td>
+                            <td colspan="3">
+                                <div style="display:flex; gap:6px;">
+                                    <button type="button" class="btn btn-blue" style="flex:1; justify-content:center;" onclick="saveNightOrders(true)">
+                                        🌙 1. حفظ طلبات الليل (تثبيت وإنشاء الجدول السفلي)
+                                    </button>
+                                    <button type="button" class="btn btn-green" style="flex:1; justify-content:center;" onclick="saveAndRepostCurrentDay()">
+                                        💾 2. حفظ الشراء وترحيل الحسابات
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- ==================== الجدول السفلي المحفوظ لطلبات البقالات (كل بقالة ماذا تريد فقط) ==================== -->
+        <div class="card card-night-orders" id="saved-night-orders-card">
+            <div class="header-bar">
+                <div>
+                    <h2 style="margin:0; color:#0984e3;">📌 ثانياً: جدول طلبات البقالات المحفوظ من الليل (كل بقالة ماذا تريد فقط)</h2>
+                    <p style="margin:4px 0 0 0; color:#57606f; font-size:13px;">يُنشأ هذا الجدول تلقائياً عند ضغط زر (حفظ طلبات الليل) ليحتفظ بالبيانات ثابتة أمام العامل عند الشراء والفرز في الصباح دون تشتت بالأسعار.</p>
+                </div>
+                <span class="badge badge-blue" id="night-save-badge">محفوظ ومثبت للصباح ✅</span>
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table class="sheet-table saved-orders-table">
+                    <thead>
+                        <tr>
+                            <th>الصنف المطلوب</th>
+                            <th>طلب بقالة (ص)</th>
+                            <th>طلب بقالة (ح)</th>
+                            <th>طلب بقالة (س)</th>
+                            <th>طلب بقالة (ع)</th>
+                            <th>طلب بقالة (ك)</th>
+                            <th style="background:#0c2461;">إجمالي العدد المطلوب شراؤه صباحاً</th>
+                        </tr>
+                    </thead>
+                    <tbody id="saved-orders-tbody">
+                        <!-- يتولد تلقائياً من الحقول العلوية -->
+                    </tbody>
+                </table>
+            </div>
+
+            <h4 style="margin:18px 0 8px 0; color:#0c2461;">📦 بطاقات الفرز السريع للسيارات (كل بقالة ماذا تريد بالتفصيل):</h4>
+            <div class="grocery-box-grid" id="grocery-sorting-cards">
+                <!-- تتولد تلقائياً -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 2. الشاشة الثانية (الجديدة للمدير): صفحة تقارير الأيام والتعديل الشامل ==================== -->
+    <div id="daily-reports-screen" class="screen">
+        <div class="card card-report">
+            <div class="header-bar">
+                <div>
+                    <h2 style="margin:0; color:#6c5ce7;">📊 صفحة تقارير الأيام المنفردة وكشف الحساب اليومي (مع التعديل الشامل 100%)</h2>
+                    <p style="margin:4px 0 0 0; color:#57606f; font-size:13.5px;">يستعرض المدير تقارير كافة الأيام أو يحدد اليوم بالتاريخ، ويعرض كشف اليوم أو يضغط (تعديل شامل) لينقله لواجهة الكشف اليومي لتعديله وترحيله بنفس تاريخه.</p>
+                </div>
+                <span class="badge badge-purple">صلاحية المدير المطلقة: 100%</span>
+            </div>
+
+            <!-- فلتر تحديد اليوم بالتاريخ -->
+            <div class="filter-bar">
+                <label>📅 ابحث عن تقرير يوم محدد بالتاريخ:</label>
+                <input type="date" id="report-date-picker" value="2026-10-16">
+                <button class="btn btn-purple" onclick="selectReportDay('الجمعة', '16 / 10 / 2026م', '64,000')">🔍 إظهار اليوم وتقريره</button>
+                <span style="color:#57606f; font-size:13px; margin-right:auto;">أو اختر مباشرة من قائمة أيام الأسبوع أدناه:</span>
+            </div>
+
+            <!-- قائمة كروت أيام الأسبوع -->
+            <div class="reports-archive-grid">
+                <div class="day-report-card selected" id="card-fri">
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:15.5px;">
+                        <span>📅 يوم الجمعة</span>
+                        <span class="badge badge-green">16 / 10 / 2026م</span>
+                    </div>
+                    <div style="margin-top:8px; font-size:13.5px; color:#57606f;">
+                        إجمالي مشتريات اليوم: <strong style="color:#009432;">64,000 ريال</strong><br>
+                        الأصناف المشتراة: <strong>10 أصناف</strong>
+                    </div>
+                    <div class="day-card-actions">
+                        <button class="btn btn-blue" style="flex:1; justify-content:center;" onclick="selectReportDay('الجمعة', '16 / 10 / 2026م', '64,000')">📄 تقرير الكشف</button>
+                        <button class="btn btn-purple" style="flex:1; justify-content:center;" onclick="jumpToEditDaySheet('الجمعة', '16 / 10 / 2026م')">✏️ تعديل شامل</button>
+                    </div>
+                </div>
+
+                <div class="day-report-card" id="card-thu">
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:15.5px;">
+                        <span>📅 يوم الخميس</span>
+                        <span class="badge badge-purple">15 / 10 / 2026م</span>
+                    </div>
+                    <div style="margin-top:8px; font-size:13.5px; color:#57606f;">
+                        إجمالي مشتريات اليوم: <strong style="color:#0c2461;">58,200 ريال</strong><br>
+                        الأصناف المشتراة: <strong>9 أصناف</strong>
+                    </div>
+                    <div class="day-card-actions">
+                        <button class="btn btn-blue" style="flex:1; justify-content:center;" onclick="selectReportDay('الخميس', '15 / 10 / 2026م', '58,200')">📄 تقرير الكشف</button>
+                        <button class="btn btn-purple" style="flex:1; justify-content:center;" onclick="jumpToEditDaySheet('الخميس', '15 / 10 / 2026م')">✏️ تعديل شامل</button>
+                    </div>
+                </div>
+
+                <div class="day-report-card" id="card-wed">
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:15.5px;">
+                        <span>📅 يوم الأربعاء</span>
+                        <span class="badge badge-purple">14 / 10 / 2026م</span>
+                    </div>
+                    <div style="margin-top:8px; font-size:13.5px; color:#57606f;">
+                        إجمالي مشتريات اليوم: <strong style="color:#0c2461;">61,000 ريال</strong><br>
+                        الأصناف المشتراة: <strong>11 صنف</strong>
+                    </div>
+                    <div class="day-card-actions">
+                        <button class="btn btn-blue" style="flex:1; justify-content:center;" onclick="selectReportDay('الأربعاء', '14 / 10 / 2026م', '61,000')">📄 تقرير الكشف</button>
+                        <button class="btn btn-purple" style="flex:1; justify-content:center;" onclick="jumpToEditDaySheet('الأربعاء', '14 / 10 / 2026م')">✏️ تعديل شامل</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- عرض كشف الحساب المنفرد لليوم المحدد -->
+            <div style="border:2px solid #6c5ce7; border-radius:10px; padding:18px; background:#fbfaff;">
+                <div class="header-bar" style="border-bottom-color:#e2d9ff;">
+                    <div>
+                        <h3 style="margin:0; color:#2c3e50;">📑 كشف حساب وتقرير يوم: <span id="preview-report-day" style="color:#6c5ce7;">الجمعة (16 / 10 / 2026م)</span></h3>
+                        <p style="margin:4px 0 0 0; font-size:13px; color:#57606f;">يعرض هذا الكشف ملخص ما تم شراؤه وتوزيعه في هذا اليوم. لتعديل أي رقم أو إضافة مشتريات، اضغط زر (تعديل شامل لليوم).</p>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-purple" onclick="jumpToEditDaySheet(document.getElementById(' report-day-hidden')?.value || 'الجمعة', document.getElementById('report-date-hidden')?.value || '16 / 10 / 2026م')">
+                            ✏️ فتح هذا اليوم في واجهة الكشف اليومي لتعديله بالكامل
+                        </button>
+                        <button class="btn btn-dark" onclick="window.print()">🖨️ طباعة كشف اليوم</button>
+                    </div>
+                </div>
+                <input type="hidden" id="report-day-hidden" value="الجمعة">
+                <input type="hidden" id="report-date-hidden" value="16 / 10 / 2026م">
+
+                <table class="sheet-table">
+                    <thead>
+                        <tr>
+                            <th style="background:#6c5ce7;">الصنف</th>
+                            <th style="background:#6c5ce7;">بقالة (ص)</th>
+                            <th style="background:#6c5ce7;">بقالة (ح)</th>
+                            <th style="background:#6c5ce7;">بقالة (س)</th>
+                            <th style="background:#6c5ce7;">بقالة (ع)</th>
+                            <th style="background:#6c5ce7;">بقالة (ك)</th>
+                            <th style="background:#2f3542;">العدد المشترى</th>
+                            <th style="background:#6c5ce7;">السعر</th>
+                            <th style="background:#6c5ce7;">المورد</th>
+                            <th style="background:#6c5ce7;">إجمالي الصنف</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-preview-tbody">
+                        <!-- يتحدث ديناميكياً من جدول الكشف -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 3. شاشة المدير: كشوفات البقالات والموردين (الأصلية بالكامل) ==================== -->
+    <div id="admin-dashboard" class="screen">
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-title">إجمالي مشتريات اليوم (الجمعة)</div>
+                <div class="stat-value" id="stat-today-total" style="color:#009432;">64,000 ريال</div>
+            </div>
+            <div class="stat-box" style="border-right-color:#e58e26;">
+                <div class="stat-title">إجمالي الديون التي علينا للموردين</div>
+                <div class="stat-value" style="color:#e58e26;">145,000 ريال</div>
+            </div>
+            <div class="stat-box" style="border-right-color:#0652DD;">
+                <div class="stat-title">إجمالي الديون المطلوبة من البقالات</div>
+                <div class="stat-value" style="color:#0652DD;">210,500 ريال</div>
+            </div>
+            <div class="stat-box" style="border-right-color:#EA2027;">
+                <div class="stat-title">حالة كشف اليومية الحالي</div>
+                <div class="stat-value"><button class="btn btn-dark" onclick="alert('تم اعتماد وإغلاق يومية الجمعة بنجاح!')">🔒 إغلاق واعتماد يومية الجمعة</button></div>
+            </div>
+        </div>
+
+        <!-- كشف حساب مورد مفصل -->
+        <div class="card card-supplier">
+            <div class="header-bar">
+                <h3 style="margin:0; color:#b33939;">🚚 أولاً: شاشة كشف حساب مورد مفصل (تحديد بالتاريخ)</h3>
+                <button class="btn btn-orange" onclick="alert('تفتح نافذة تسجيل سند سداد للمورد ويخصم من رصيده فوراً')">💵 + تسجيل سند سداد للمورد</button>
+            </div>
+            <div class="filter-bar">
+                <label>اختر المورد:</label>
+                <select id="admin-supplier-filter">
+                    <option selected>صالح اللبيع (سوق الخضار)</option>
+                    <option>أمين</option>
+                    <option>فارس</option>
+                    <option>الزعيم</option>
+                    <option>عمار الخيار</option>
+                </select>
+                <label>من تاريخ:</label>
+                <input type="date" value="2026-10-01">
+                <label>إلى تاريخ:</label>
+                <input type="date" value="2026-10-16">
+                <button class="btn btn-blue">🔍 عرض الكشف</button>
+                <button class="btn btn-dark" onclick="window.print()">🖨️ طباعة / PDF</button>
+            </div>
+
+            <table class="sheet-table">
+                <thead>
+                    <tr>
+                        <th style="background:#b33939;">التاريخ</th>
+                        <th style="background:#b33939;">البيان / العملية</th>
+                        <th style="background:#b33939;">تفاصيل الأصناف التي أُخذت من المورد (تُرحّل تلقائياً من جدول العامل)</th>
+                        <th style="background:#b33939;">قيمة المشتريات (بالآجل)</th>
+                        <th style="background:#b33939;">المسدد للمورد</th>
+                        <th style="background:#b33939;">الرصيد المتبقي للمورد</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>15/10/2026</td>
+                        <td>مشتريات الخميس</td>
+                        <td style="text-align:right;">• باميه: العدد (3) × 2,500 = 7,500 &nbsp;|&nbsp; • كوسه: العدد (2) × 1,500 = 3,000</td>
+                        <td>10,500</td>
+                        <td>0</td>
+                        <td><strong>10,500</strong></td>
+                    </tr>
+                    <tr>
+                        <td>16/10/2026</td>
+                        <td>مشتريات الجمعة</td>
+                        <td style="text-align:right;">• باميه: العدد (2) × 2,800 = 5,600 &nbsp;|&nbsp; • كوسه: العدد (2) × 1,500 = 3,000 &nbsp;|&nbsp; • اسود: (1.5) × 800 = 1,200</td>
+                        <td>9,800</td>
+                        <td>0</td>
+                        <td><strong>20,300</strong></td>
+                    </tr>
+                    <tr style="background:#e8f8f5;">
+                        <td>16/10/2026</td>
+                        <td>سند سداد نقدي #32</td>
+                        <td style="text-align:right;">دفعة سداد نقدية من المدير للمورد (صالح اللبيع)</td>
+                        <td>—</td>
+                        <td style="color:#009432; font-weight:bold;">15,000</td>
+                        <td><strong>5,300</strong></td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="tfoot-row">
+                        <td colspan="3">الإجمالي النهائي لحساب المورد (صالح اللبيع) خلال الفترة</td>
+                        <td>20,300 ريال</td>
+                        <td>15,000 ريال</td>
+                        <td style="color:#EA2027;">المتبقي له: 5,300 ريال</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- كشف حساب بقالة مفصل -->
+        <div class="card card-grocery">
+            <div class="header-bar">
+                <h3 style="margin:0; color:#0652DD;">🏪 ثانياً: شاشة كشف حساب بقالة مفصل (تحديد بالتاريخ)</h3>
+                <button class="btn btn-blue" onclick="alert('تفتح نافذة تسجيل دفعة مستلمة من البقالة')">💰 + تسجيل دفعة مستلمة من البقالة</button>
+            </div>
+            <div class="filter-bar">
+                <label>اختر البقالة:</label>
+                <select>
+                    <option selected>البقالة (ص) - بقالة الصفا</option>
+                    <option>البقالة (ح) - بقالة الخير</option>
+                    <option>البقالة (س) - بقالة السعادة</option>
+                    <option>البقالة (ع) - بقالة العروبة</option>
+                    <option>البقالة (ك) - بقالة الكرامة</option>
+                </select>
+                <label>من تاريخ:</label>
+                <input type="date" value="2026-10-01">
+                <label>إلى تاريخ:</label>
+                <input type="date" value="2026-10-16">
+                <button class="btn btn-blue">🔍 عرض الكشف</button>
+            </div>
+
+            <table class="sheet-table">
+                <thead>
+                    <tr>
+                        <th style="background:#0652DD;">التاريخ</th>
+                        <th style="background:#0652DD;">العملية</th>
+                        <th style="background:#0652DD;">تفاصيل الخضروات المسلمة للبقالة في هذا اليوم (الكمية × السعر)</th>
+                        <th style="background:#0652DD;">إجمالي اليوم</th>
+                        <th style="background:#0652DD;">المسدد للمدير</th>
+                        <th style="background:#0652DD;">المتبقي على البقالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>16/10/2026</td>
+                        <td>كشف الجمعة</td>
+                        <td style="text-align:right;">
+                            • كوبش: (1 × 1,300 = 1,300) &nbsp;|&nbsp; • جزر: (½ × 3,200 = 1,600) &nbsp;|&nbsp; • بيبار: (1 × 2,700 = 2,700)<br>
+                            • باميه: (½ × 2,800 = 1,400) &nbsp;|&nbsp; • كوسه: (½ × 1,500 = 750) &nbsp;|&nbsp; • اسود: (½ × 800 = 400)<br>
+                            • ليم: (1 × 3,000 = 3,000) &nbsp;|&nbsp; • خيار: (4 × 1,200 = 4,800)
+                        </td>
+                        <td>14,450</td>
+                        <td>0</td>
+                        <td><strong>14,450</strong></td>
+                    </tr>
+                    <tr style="background:#e8f8f5;">
+                        <td>16/10/2026</td>
+                        <td>سند قبض #18</td>
+                        <td style="text-align:right;">دفعة نقدية مسلّمة للمدير من حساب البقالة (ص)</td>
+                        <td>—</td>
+                        <td style="color:#009432; font-weight:bold;">10,000</td>
+                        <td><strong>4,450</strong></td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="tfoot-row">
+                        <td colspan="3">الإجمالي النهائي لكشف حساب البقالة (ص)</td>
+                        <td>14,450 ريال</td>
+                        <td>10,000 ريال</td>
+                        <td style="color:#0652DD;">المطلوب: 4,450 ريال</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- ==================== 4. شاشة المدير: التحكم بالصلاحيات وسجل التدقيق (الأصلية بالكامل) ==================== -->
+    <div id="admin-permissions" class="screen">
+        <div class="card">
+            <div class="header-bar">
+                <h3 style="margin:0; color:#1e3799;">⚙️ لوحة تحكم المدير بصلاحيات العامل وإدارة البقالات وسجل التدقيق</h3>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-blue" onclick="alert('إضافة بقالة جديدة كعمود في النظام')">🏪 + إضافة بقالة جديدة</button>
+                    <button class="btn btn-green" onclick="alert('إنشاء حساب قراءة فقط لصاحب بقالة')">👤 + إضافة مستخدم (صاحب بقالة)</button>
+                </div>
+            </div>
+
+            <h4 style="color:#0c2461;">أولاً: مفاتيح فتح وإغلاق الخدمات للعامل (تعمل بضغطة زر فورية):</h4>
+            <div class="switch-row">
+                <div>
+                    <strong>1. السماح للعامل بإضافة (مورد جديد) إلى قائمة الموردين</strong>
+                    <div style="font-size:12px; color:#57606f;">إذا أغلقت هذه الميزة، يلتزم العامل بالموردين الموجودين في القائمة المنسدلة فقط.</div>
+                </div>
+                <button class="toggle-btn" onclick="this.classList.toggle('off'); this.innerText = this.classList.contains('off') ? 'مغلق ❌' : 'مفتوح ✅';">مفتوح ✅</button>
+            </div>
+
+            <div class="switch-row">
+                <div>
+                    <strong>2. السماح للعامل بإضافة (صنف خضروات جديد) إلى جدول الكشف</strong>
+                    <div style="font-size:12px; color:#57606f;">يتيح للعامل إضافة سطر لصنف جديد غير موجود في الأصناف الأساسية.</div>
+                </div>
+                <button class="toggle-btn" onclick="this.classList.toggle('off'); this.innerText = this.classList.contains('off') ? 'مغلق ❌' : 'مفتوح ✅';">مفتوح ✅</button>
+            </div>
+
+            <div class="switch-row">
+                <div>
+                    <strong>3. السماح للعامل بتعديل كميات البقالات والعدد الإجمالي حتى نهاية اليوم</strong>
+                    <div style="font-size:12px; color:#57606f;">إذا أغلقته، يقفل الكشف ولا يستطيع العامل تغيير أي رقم بعد حفظه.</div>
+                </div>
+                <button class="toggle-btn" onclick="this.classList.toggle('off'); this.innerText = this.classList.contains('off') ? 'مغلق ❌' : 'مفتوح ✅';">مفتوح ✅</button>
+            </div>
+
+            <h4 style="color:#0c2461; margin-top:25px;">ثانياً: سجل التدقيق والمراجعة الشامل (Audit Log) - يراقب كل حركة بالساعة والدقيقة:</h4>
+            <table class="sheet-table" id="audit-log-table">
+                <thead>
+                    <tr>
+                        <th style="background:#2f3542;">التاريخ</th>
+                        <th style="background:#2f3542;">الوقت الدقيق</th>
+                        <th style="background:#2f3542;">المستخدم</th>
+                        <th style="background:#2f3542;">نوع العملية</th>
+                        <th style="background:#2f3542;">التفاصيل الدقيقة لما حدث (قبل وبعد التعديل)</th>
+                    </tr>
+                </thead>
+                <tbody id="audit-tbody">
+                    <tr>
+                        <td>15/10/2026</td>
+                        <td>09:30:15 م</td>
+                        <td>العامل (أحمد)</td>
+                        <td>إدخال طلبات الليل</td>
+                        <td style="text-align:right;">قام بإدخال كميات طلبات البقالات (ص، ح، س، ع، ك) لكشف يوم الجمعة وإنشاء الجدول السفلي.</td>
+                    </tr>
+                    <tr>
+                        <td>16/10/2026</td>
+                        <td>07:15:40 ص</td>
+                        <td>العامل (أحمد)</td>
+                        <td>إضافة مورد جديد</td>
+                        <td style="text-align:right;">أضاف مورداً جديداً للقائمة باسم: <strong>(عمار الخيار)</strong>.</td>
+                    </tr>
+                    <tr>
+                        <td>16/10/2026</td>
+                        <td>07:45:10 ص</td>
+                        <td>العامل (أحمد)</td>
+                        <td>تعديل كمية</td>
+                        <td style="text-align:right;">عدّل كمية صنف <strong>(خيار)</strong> للبقالة (ص) من <code>3</code> إلى <code>4</code>، وتحدث العدد الإجمالي إلى <code>10</code>.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ==================== 5. شاشة صاحب البقالة (قراءة فقط - الأصلية بالكامل) ==================== -->
+    <div id="grocery-screen" class="screen">
+        <div class="card card-grocery">
+            <div class="header-bar">
+                <div>
+                    <h2 style="margin:0; color:#0652DD;">👁️ بوابة صاحب البقالة: كشف حساب البقالة (ص) - قراءة فقط</h2>
+                    <p style="margin:4px 0 0 0; color:#57606f; font-size:13px;">مرحباً بك | هذه الشاشة مخصصة لمراجعة فواتيرك اليومية وحسابك بدقة (لا يمكن التعديل)</p>
+                </div>
+                <span class="badge badge-blue">صلاحية: مشاهدة ومراجعة فقط (Read-Only)</span>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-title">إجمالي مسحوبات الخضار (خلال الفترة)</div>
+                    <div class="stat-value">14,450 ريال</div>
+                </div>
+                <div class="stat-box" style="border-right-color:#009432;">
+                    <div class="stat-title">إجمالي المبالغ التي سددتها</div>
+                    <div class="stat-value" style="color:#009432;">10,000 ريال</div>
+                </div>
+                <div class="stat-box" style="border-right-color:#EA2027;">
+                    <div class="stat-title">المبلغ الصافي المتبقي عليك</div>
+                    <div class="stat-value" style="color:#EA2027;">4,450 ريال</div>
+                </div>
+            </div>
+
+            <div class="filter-bar">
+                <label>مراجعة الحساب من تاريخ:</label>
+                <input type="date" value="2026-10-01">
+                <label>إلى تاريخ:</label>
+                <input type="date" value="2026-10-16">
+                <button class="btn btn-blue">🔍 تحديث الكشف</button>
+            </div>
+
+            <table class="sheet-table">
+                <thead>
+                    <tr>
+                        <th style="background:#0652DD;">التاريخ</th>
+                        <th style="background:#0652DD;">البيان</th>
+                        <th style="background:#0652DD;">تفاصيل الخضروات التي استلمتها بقالتك في هذا اليوم</th>
+                        <th style="background:#0652DD;">إجمالي الفاتورة</th>
+                        <th style="background:#0652DD;">المسدد منك</th>
+                        <th style="background:#0652DD;">المتبقي عليك</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>16/10/2026</td>
+                        <td>طلبات الجمعة</td>
+                        <td style="text-align:right;">
+                            • كوبش: (1 × 1,300 = 1,300) &nbsp;|&nbsp; • جزر: (½ × 3,200 = 1,600) &nbsp;|&nbsp; • بيبار: (1 × 2,700 = 2,700)<br>
+                            • باميه: (½ × 2,800 = 1,400) &nbsp;|&nbsp; • كوسه: (½ × 1,500 = 750) &nbsp;|&nbsp; • اسود: (½ × 800 = 400)<br>
+                            • ليم: (1 × 3,000 = 3,000) &nbsp;|&nbsp; • خيار: (4 × 1,200 = 4,800)
+                        </td>
+                        <td>14,450</td>
+                        <td>0</td>
+                        <td><strong>14,450</strong></td>
+                    </tr>
+                    <tr style="background:#e8f8f5;">
+                        <td>16/10/2026</td>
+                        <td>سند تسديد #18</td>
+                        <td style="text-align:right;">دفعة نقدية مسددة للإدارة</td>
+                        <td>—</td>
+                        <td>10,000</td>
+                        <td><strong>4,450</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+let lastFocusedInput = null;
+let isManagerEditMode = false;
+
+function setLastFocus(el) {
+    lastFocusedInput = el;
+}
+
+// إدخال الكسور السريعة في الخانة المحددة
+function insertFraction(val) {
+    if (lastFocusedInput) {
+        lastFocusedInput.value = val;
+        recalcAll();
+        lastFocusedInput.focus();
+    } else {
+        alert('اضغط أولاً داخل خانة البقالة التي تريد كتابة الكسر فيها، ثم اضغط هذا الزر.');
+    }
+}
+
+// التنقل بين الشاشات الخمس
+function showScreen(screenId, btn) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+    if (btn) btn.classList.add('active');
+    if (screenId === 'daily-reports-screen') {
+        renderReportPreviewTable();
+    }
+}
+
+// تفعيل أو إلغاء زر (تم الشراء ✅) المقابل للمورد
+function toggleBuyStatus(button) {
+    const tr = button.closest('tr');
+    if (button.classList.contains('bought')) {
+        button.classList.remove('bought');
+        button.innerHTML = '⏳ قيد الشراء';
+        tr.classList.remove('row-bought');
+    } else {
+        button.classList.add('bought');
+        button.innerHTML = 'تم الشراء ✅';
+        tr.classList.remove('row-cancelled');
+        tr.classList.add('row-bought');
+    }
+    updateBuyProgress();
+}
+
+function updateBuyProgress() {
+    const rows = document.querySelectorAll('#sheet-tbody tr');
+    let totalActive = 0;
+    let boughtCount = 0;
+    rows.forEach(tr => {
+        const qty = parseFloat(tr.querySelector('.row-total-qty').value) || 0;
+        if (qty > 0) {
+            totalActive++;
+            if (tr.querySelector('.btn-check-buy').classList.contains('bought')) {
+                boughtCount++;
+            }
+        }
+    });
+    document.getElementById('buy-progress-counter').innerText = `🛒 إنجاز الشراء الصباحي: تم شراء ${boughtCount} من ${totalActive} أصناف مطلوبة`;
+}
+
+// إعادة حساب الكميات والإجماليات تلقائياً
+function recalcAll() {
+    const rows = document.querySelectorAll('#sheet-tbody tr');
+    rows.forEach(tr => {
+        let rowSum = 0;
+        ['ص','ح','س','ع','ك'].forEach(g => {
+            const val = parseFloat(tr.querySelector('.q-' + g).value) || 0;
+            rowSum += val;
+        });
+        tr.querySelector('.row-total-qty').value = rowSum > 0 ? rowSum : '';
+    });
+    recalcTotalsOnly();
+}
+
+// حساب إجماليات الأعمدة بالريال (يسمح للمدير أيضاً بتعديل العدد الإجمالي مباشرة للشراء الإضافي)
+function recalcTotalsOnly() {
+    const rows = document.querySelectorAll('#sheet-tbody tr');
+    let sums = { 'ص': 0, 'ح': 0, 'س': 0, 'ع': 0, 'ك': 0 };
+    let grandTotal = 0;
+
+    rows.forEach(tr => {
+        const priceStr = (tr.querySelector('.price-input').value || '').toString().replace(/,/g, '');
+        const price = parseFloat(priceStr) || 0;
+        const totalQty = parseFloat(tr.querySelector('.row-total-qty').value) || 0;
+
+        if (price > 0) {
+            ['ص','ح','س','ع','ك'].forEach(g => {
+                const q = parseFloat(tr.querySelector('.q-' + g).value) || 0;
+                sums[g] += (q * price);
+            });
+            grandTotal += (totalQty * price);
+        }
+    });
+
+    ['ص','ح','س','ع','ك'].forEach(g => {
+        document.getElementById('sum-' + g).innerText = sums[g].toLocaleString() + ' ر.ي';
+    });
+    document.getElementById('sum-grand').innerText = grandTotal.toLocaleString() + ' ر.ي';
+    const statEl = document.getElementById('stat-today-total');
+    if (statEl) statEl.innerText = grandTotal.toLocaleString() + ' ريال';
+    updateBuyProgress();
+}
+
+// حفظ طلبات الليل وإنشاء الجدول السفلي المستقل (كل بقالة ماذا تريد فقط)
+function saveNightOrders(showNotification) {
+    const rows = document.querySelectorAll('#sheet-tbody tr');
+    const savedTbody = document.getElementById('saved-orders-tbody');
+    savedTbody.innerHTML = '';
+
+    const groceries = {
+        'ص': { name: 'بقالة (ص) - الصفا', items: [] },
+        'ح': { name: 'بقالة (ح) - الخير', items: [] },
+        'س': { name: 'بقالة (س) - السعادة', items: [] },
+        'ع': { name: 'بقالة (ع) - العروبة', items: [] },
+        'ك': { name: 'بقالة (ك) - الكرامة', items: [] }
+    };
+
+    rows.forEach(tr => {
+        const itemName = tr.querySelector('.item-name').innerText;
+        const qS = parseFloat(tr.querySelector('.q-ص').value) || 0;
+        const qH = parseFloat(tr.querySelector('.q-ح').value) || 0;
+        const qSa = parseFloat(tr.querySelector('.q-س').value) || 0;
+        const qA = parseFloat(tr.querySelector('.q-ع').value) || 0;
+        const qK = parseFloat(tr.querySelector('.q-ك').value) || 0;
+        const total = parseFloat(tr.querySelector('.row-total-qty').value) || (qS + qH + qSa + qA + qK);
+
+        if (total > 0) {
+            const newTr = document.createElement('tr');
+            newTr.innerHTML = `
+                <td style="font-weight:bold; background:#f1f2f6;">${itemName}</td>
+                <td>${qS > 0 ? '<strong>' + qS + '</strong>' : '—'}</td>
+                <td>${qH > 0 ? '<strong>' + qH + '</strong>' : '—'}</td>
+                <td>${qSa > 0 ? '<strong>' + qSa + '</strong>' : '—'}</td>
+                <td>${qA > 0 ? '<strong>' + qA + '</strong>' : '—'}</td>
+                <td>${qK > 0 ? '<strong>' + qK + '</strong>' : '—'}</td>
+                <td style="background:#e8f8f5; font-weight:bold; color:#006266;">${total}</td>
+            `;
+            savedTbody.appendChild(newTr);
+
+            if (qS > 0) groceries['ص'].items.push(`${itemName}: <strong>${qS}</strong>`);
+            if (qH > 0) groceries['ح'].items.push(`${itemName}: <strong>${qH}</strong>`);
+            if (qSa > 0) groceries['س'].items.push(`${itemName}: <strong>${qSa}</strong>`);
+            if (qA > 0) groceries['ع'].items.push(`${itemName}: <strong>${qA}</strong>`);
+            if (qK > 0) groceries['ك'].items.push(`${itemName}: <strong>${qK}</strong>`);
+        }
+    });
+
+    const cardsContainer = document.getElementById('grocery-sorting-cards');
+    cardsContainer.innerHTML = '';
+    Object.keys(groceries).forEach(key => {
+        const g = groceries[key];
+        const listHtml = g.items.length > 0 
+            ? '<ul class="grocery-order-list"><li>' + g.items.join('</li><li>') + '</li></ul>'
+            : '<p style="color:#95a5a6; font-size:13px; margin:0;">لا توجد طلبات مسجلة</p>';
+        
+        const card = document.createElement('div');
+        card.className = 'grocery-order-card';
+        card.innerHTML = `<h4><span>🏪 ${g.name}</span> <span style="color:#0984e3; font-size:12px;">${g.items.length} أصناف</span></h4>${listHtml}`;
+        cardsContainer.appendChild(card);
+    });
+
+    if (showNotification) {
+        document.getElementById('night-save-badge').innerText = 'تم حفظ وتثبيت طلبات الليل في الجدول السفلي بنجاح ✅';
+        addAuditLog('العامل (أحمد)', 'حفظ طلبات الليل', 'تم حفظ كميات البقالات وتوليد جدول الطلبات السفلي للصباح.');
+        document.getElementById('saved-night-orders-card').scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+// تكرار سطر صنف إذا اشتراه من مورد ثانٍ
+function duplicateRow(btn) {
+    const tr = btn.closest('tr');
+    const clone = tr.cloneNode(true);
+    clone.querySelectorAll('.cell-input').forEach(inp => inp.value = '');
+    clone.querySelector('.row-total-qty').value = '';
+    const buyBtn = clone.querySelector('.btn-check-buy');
+    buyBtn.classList.remove('bought');
+    buyBtn.innerHTML = '⏳ قيد الشراء';
+    clone.classList.remove('row-bought');
+    tr.parentNode.insertBefore(clone, tr.nextSibling);
+    recalcAll();
+}
+
+// إضافة صنف جديد للكشف
+function promptAddNewProduct() {
+    const name = prompt('أدخل اسم صنف الخضار الجديد لإضافته للكشف:');
+    if (name && name.trim() !== '') {
+        const tbody = document.getElementById('sheet-tbody');
+        const firstRow = tbody.querySelector('tr');
+        const newRow = firstRow.cloneNode(true);
+        newRow.setAttribute('data-item', name.trim());
+        newRow.querySelector('.item-name').innerText = name.trim();
+        newRow.querySelectorAll('.cell-input').forEach(inp => inp.value = '');
+        newRow.querySelector('.row-total-qty').value = '';
+        const buyBtn = newRow.querySelector('.btn-check-buy');
+        buyBtn.classList.remove('bought');
+        buyBtn.innerHTML = '⏳ قيد الشراء';
+        newRow.classList.remove('row-bought');
+        tbody.appendChild(newRow);
+        addAuditLog(isManagerEditMode ? 'المدير العام' : 'العامل (أحمد)', 'إضافة صنف جديد', `تمت إضافة صنف جديد للكشف باسم: (${name.trim()})`);
+    }
+}
+
+// إضافة مورد جديد لجميع القوائم المنسدلة
+function promptAddNewSupplier() {
+    const supplier = prompt('أدخل اسم المورد الجديد لإضافته لقائمة الموردين:');
+    if (supplier && supplier.trim() !== '') {
+        document.querySelectorAll('.supplier-select').forEach(select => {
+            const opt = document.createElement('option');
+            opt.text = supplier.trim();
+            opt.value = supplier.trim();
+            select.add(opt);
+        });
+        addAuditLog(isManagerEditMode ? 'المدير العام' : 'العامل (أحمد)', 'إضافة مورد جديد', `تمت إضافة مورد جديد للقائمة المنسدلة باسم: (${supplier.trim()})`);
+        alert(`تمت إضافة المورد (${supplier.trim()}) لجميع القوائم المنسدلة بنجاح!`);
+    }
+}
+
+// في صفحة التقارير: اختيار يوم واستعراض كشفه
+function selectReportDay(dayName, dateStr, totalStr) {
+    document.getElementById('preview-report-day').innerText = `${dayName} (${dateStr})`;
+    document.getElementById('report-day-hidden').value = dayName;
+    document.getElementById('report-date-hidden').value = dateStr;
+    renderReportPreviewTable();
+}
+
+function renderReportPreviewTable() {
+    const rows = document.querySelectorAll('#sheet-tbody tr');
+    const previewTbody = document.getElementById('report-preview-tbody');
+    previewTbody.innerHTML = '';
+
+    rows.forEach(tr => {
+        const item = tr.querySelector('.item-name').innerText;
+        const qS = tr.querySelector('.q-ص').value || '—';
+        const qH = tr.querySelector('.q-ح').value || '—';
+        const qSa = tr.querySelector('.q-س').value || '—';
+        const qA = tr.querySelector('.q-ع').value || '—';
+        const qK = tr.querySelector('.q-ك').value || '—';
+        const totalQty = parseFloat(tr.querySelector('.row-total-qty').value) || 0;
+        const price = parseFloat((tr.querySelector('.price-input').value || '').replace(/,/g, '')) || 0;
+        const supplier = tr.querySelector('.supplier-select').value;
+
+        if (totalQty > 0 && price > 0) {
+            const trEl = document.createElement('tr');
+            trEl.innerHTML = `
+                <td style="font-weight:bold;">${item}</td>
+                <td>${qS}</td>
+                <td>${qH}</td>
+                <td>${qSa}</td>
+                <td>${qA}</td>
+                <td>${qK}</td>
+                <td style="font-weight:bold; color:#0c2461;">${totalQty}</td>
+                <td>${price.toLocaleString()}</td>
+                <td>${supplier}</td>
+                <td style="font-weight:bold; color:#009432;">${(totalQty * price).toLocaleString()} ر.ي</td>
+            `;
+            previewTbody.appendChild(trEl);
+        }
+    });
+}
+
+// الميزة الجوهرية: نقل المدير من صفحة التقارير إلى واجهة الكشف اليومي لتعديل اليوم المحدد دون تغيير تاريخه
+function jumpToEditDaySheet(dayName, dateStr) {
+    isManagerEditMode = true;
+    document.getElementById('sheet-day-name').innerText = dayName;
+    document.getElementById('sheet-date-val').innerText = dateStr + ' (تاريخ مثبت لا يتغير)';
+    document.getElementById('editing-day-label').innerText = `${dayName} (${dateStr})`;
+    document.getElementById('current-actor-label').innerText = 'المدير العام (صلاحية التعديل الشامل 100%)';
+    document.getElementById('sheet-status-badge').innerText = 'وضع التعديل الشامل للمدير 🔓';
+    document.getElementById('admin-edit-mode-banner').classList.add('show');
+
+    showScreen('worker-screen', document.getElementById('tab-worker'));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function exitAdminEditMode() {
+    isManagerEditMode = false;
+    document.getElementById('admin-edit-mode-banner').classList.remove('show');
+    document.getElementById('current-actor-label').innerText = 'العامل (أحمد)';
+    showScreen('daily-reports-screen', document.getElementById('tab-reports'));
+}
+
+function saveAndRepostCurrentDay() {
+    recalcTotalsOnly();
+    saveNightOrders(false);
+    const dayName = document.getElementById('sheet-day-name').innerText;
+    const dateVal = document.getElementById('sheet-date-val').innerText;
+    addAuditLog(
+        isManagerEditMode ? 'المدير العام' : 'العامل (أحمد)',
+        'حفظ وترحيل الكشف',
+        `تم حفظ التعديلات وإعادة ترحيل الحسابات لكشف يوم ${dayName} بنفس التاريخ (${dateVal}).`
+    );
+    alert(`تم حفظ كافة التعديلات وترحيل الحسابات الجديدة للموردين والبقالات بنجاح مع الاحتفاظ بنفس تاريخ اليوم (${dayName})!`);
+}
+
+function addAuditLog(user, action, details) {
+    const tbody = document.getElementById('audit-tbody');
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('ar-YE');
+    const tr = document.createElement('tr');
+    tr.style.backgroundColor = '#fff9e6';
+    tr.innerHTML = `
+        <td>16/10/2026</td>
+        <td>${timeStr}</td>
+        <td><strong>${user}</strong></td>
+        <td>${action}</td>
+        <td style="text-align:right;">${details}</td>
+    `;
+    tbody.insertBefore(tr, tbody.firstChild);
+}
+
+window.onload = function() {
+    recalcAll();
+    saveNightOrders(false);
+};
+</script>
+</body>
+</html>

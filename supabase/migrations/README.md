@@ -1,0 +1,7 @@
+-- Migration history mirror (manual) — Supabase CLI also tracks these locally.
+-- Order matters: schema → RLS → core RPCs → ledger/reporting RPCs → reference seed.
+--
+-- Run with the Supabase CLI:
+--   supabase start
+--   supabase db reset        # applies all migrations + seed.sql
+--   supabase test db         # runs supabase/tests/*.sql (pgTAP)

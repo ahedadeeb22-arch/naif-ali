@@ -1,0 +1,5 @@
+# Supabase Local Configuration
+# لا يحتوي هذا الملف على أسرار إنتاج. تشغيل محلي فقط عبر Supabase CLI.
+# راجع DEPLOYMENT_PLAN.md §4 قبل ربط مشروع سحابي.
+
+project_id = "naif-alahmadi"

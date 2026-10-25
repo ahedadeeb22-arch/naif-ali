@@ -1,0 +1,53 @@
+# dependencies
+node_modules/
+node_modules.partial/
+.deps-cache/
+.tmp-audit/
+.pnp
+.pnp.js
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+
+# production
+/build
+
+# testing
+/coverage
+
+# local env files — never commit real credentials
+.env
+.env*.local
+.env.production
+.env.preview
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
+*.log
+*.bak
+yarn-debug.log*
+yarn-error.log*
+
+# supabase local runtime
+supabase/.temp
+supabase/.branches
+
+# editor (keep .vscode/settings.json intentionally untracked by default)
+.vscode/
+
+# Playwright / test artifacts
+/test-results/
+/playwright-report/
+
+# temporary scripts
+*.cjs
